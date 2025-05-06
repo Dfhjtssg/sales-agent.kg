@@ -4,14 +4,11 @@ const owner = "Dfhjtssg";
 const repo = "sqlite-db";
 const filePath = "database.db";
 
+// Загружаем базу данных из GitHub
 async function loadDatabase() {
-  const token = "******************";
-  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`, {
-    headers: { 'Authorization': `token ${token}` }
-  });
-
+  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`);
   if (!res.ok) {
-    alert("Ошибка авторизации или доступа к файлу. Проверь токен и права доступа.");
+    alert("Ошибка загрузки базы. Проверь доступ к файлу.");
     return;
   }
 
@@ -26,19 +23,21 @@ async function loadDatabase() {
   db = new SQL.Database(binary);
 
   db.run(`CREATE TABLE IF NOT EXISTS shops (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      object TEXT,
-      day TEXT,
-      shop_name TEXT
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    object TEXT,
+    day TEXT,
+    shop_name TEXT
   );`);
 
   displayTable();
 }
 
+// Показываем данные в таблице
 function displayTable() {
   if (!db) return;
   const table = document.querySelector('#data-table tbody');
   table.innerHTML = '';
+
   let res;
   try {
     res = db.exec("SELECT * FROM shops")[0];
@@ -46,7 +45,9 @@ function displayTable() {
     console.error("Ошибка при чтении таблицы shops:", e);
     return;
   }
+
   if (!res) return;
+
   res.values.forEach(row => {
     const tr = document.createElement('tr');
     row.forEach(val => {
@@ -54,12 +55,14 @@ function displayTable() {
       td.textContent = val;
       tr.appendChild(td);
     });
+
     const btn = document.createElement('button');
     btn.textContent = 'Удалить';
     btn.onclick = () => {
       db.run("DELETE FROM shops WHERE id = ?", [row[0]]);
       displayTable();
     };
+
     const td = document.createElement('td');
     td.appendChild(btn);
     tr.appendChild(td);
@@ -67,6 +70,7 @@ function displayTable() {
   });
 }
 
+// Добавление записи
 function addEntry() {
   if (!db) {
     alert("База данных ещё не загружена!");
@@ -81,44 +85,38 @@ function addEntry() {
   }
 }
 
+// Сохранение базы через GitHub Actions
 async function saveDatabase() {
   if (!db) {
     alert("База данных ещё не загружена!");
     return;
   }
-  const token = "******************";
+
   const binaryArray = db.export();
   const content = btoa(String.fromCharCode(...binaryArray));
+  const token = prompt("Введите временный GitHub токен (только с правом actions:workflow_dispatch):");
 
-  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`, {
-    headers: { 'Authorization': `token ${token}` }
-  });
-
-  if (!res.ok) {
-    alert("Не удалось получить SHA-файл. Проверь токен и права доступа.");
-    return;
-  }
-
-  const data = await res.json();
-  const sha = data.sha;
-
-  const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`, {
-    method: 'PUT',
+  const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/workflows/update-db.yml/dispatches`, {
+    method: 'POST',
     headers: {
       'Authorization': `token ${token}`,
+      'Accept': 'application/vnd.github+json',
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      message: "Обновление базы через веб-интерфейс",
-      content: content,
-      sha: sha
+      ref: "main",
+      inputs: {
+        base64content: content,
+        message: "Обновление базы через интерфейс"
+      }
     })
   });
 
   if (response.ok) {
-    alert("База данных сохранена в GitHub");
+    alert("База данных отправлена на сохранение. Обновление произойдёт через минуту.");
   } else {
-    alert("Ошибка при сохранении базы. Проверь токен и SHA.");
+    alert("Ошибка при вызове GitHub Actions. Проверь токен и настройки workflow.");
+    console.error(await response.json());
   }
 }
 
