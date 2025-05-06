@@ -1,7 +1,7 @@
 let db;
 let SQL;
 const owner = "Dfhjtssg";
-const repo = "sqlite-db";
+const repo = "sales-agent.kg";
 const filePath = "database.db";
 
 // Загружаем базу данных из GitHub
