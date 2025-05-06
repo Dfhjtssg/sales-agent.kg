@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>SQLite База</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h2>SQLite Web Интерфейс</h2>
+
+  <div class="row">
+    <label>GitHub токен: <input type="password" id="token" size="40"></label>
+  </div>
+  <div class="row">
+    <label>Объект: <input type="text" id="object"></label>
+    <label>День: <input type="text" id="day"></label>
+    <label>Магазин: <input type="text" id="shop"></label>
+    <button onclick="addEntry()">Добавить</button>
+  </div>
+  <div class="row">
+    <button onclick="loadDatabase()">Загрузить базу</button>
+    <button onclick="saveDatabase()">Сохранить в GitHub</button>
+  </div>
+  <div class="row">
+    <table border="1" id="data-table">
+      <thead>
+        <tr>
+          <th>ID</th><th>Объект</th><th>День</th><th>Магазин</th><th>Удалить</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script src="db.js"></script>
+</body>
+</html>
