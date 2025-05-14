@@ -1,0 +1,244 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+
+#map {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+}
+
+#form {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  max-height: 60%;
+  overflow-y: auto;
+  background: rgba(255, 255, 255, 0.97);
+  padding: 12px;
+  border-radius: 12px 12px 0 0;
+  z-index: 1000;
+  box-shadow: 0 -3px 10px rgba(0,0,0,0.3);
+}
+
+input, select, button, textarea {
+  width: 100%;
+  margin-top: 6px;
+  margin-bottom: 10px;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+textarea {
+  resize: vertical;
+  height: 80px;
+}
+
+button {
+  background: #2196f3;
+  color: white;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1976d2;
+}
+
+.shop-marker {
+  display: flex;
+  align-items: center;
+  user-select: none;
+  cursor: pointer;
+}
+
+.label-text {
+  background: #2196f3;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-style: italic;
+  font-weight: bold;
+  white-space: nowrap;
+  text-align: center;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+.triangle {
+  width: 0;
+  height: 0;
+}
+
+.marker-up {
+  flex-direction: column;
+  gap: 2px;
+}
+.marker-up .triangle {
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 12px solid #2196f3;
+}
+
+.marker-down {
+  flex-direction: column-reverse;
+  gap: 2px;
+}
+.marker-down .triangle {
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 12px solid #2196f3;
+}
+
+.marker-left,
+.marker-right {
+  flex-direction: row-reverse;
+  gap: 4px;
+}
+.marker-left .triangle {
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-left: 12px solid #2196f3;
+}
+.marker-right .triangle {
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-right: 12px solid #2196f3;
+}
+
+.delete-button {
+  display: none;
+  position: absolute;
+  top: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: red;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  padding: 2px 6px;
+  cursor: pointer;
+  z-index: 1000;
+}
+.shop-marker:hover .delete-button {
+  display: block;
+}
+
+.leaflet-control-attribution {
+  display: none !important;
+}
+
+.leaflet-top.leaflet-right {
+  top: 50% !important;
+  transform: translateY(-50%);
+}
+
+#openMenuBtn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1100;
+  padding: 10px 14px;
+  background: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+#menuDialog {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 90%;
+  max-width: 320px;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 16px;
+  border-radius: 10px;
+  z-index: 1101;
+  box-shadow: 0 0 15px rgba(0,0,0,0.4);
+}
+
+
+
+#toggleMenuBtn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 1100;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #2196f3;
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+
+.sidebar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 85%;
+  max-width: 320px;
+  height: 100%;
+  background: white;
+  padding: 16px;
+  z-index: 1101;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+  overflow-y: auto;
+}
+
+.sidebar h2 {
+  margin-top: 0;
+}
+
+.sidebar button {
+  margin-top: 10px;
+}
+
+.hidden {
+  display: none;
+}
+
+.section {
+  margin-bottom: 20px;
+}
+
+.section h3 {
+  margin-top: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+#output {
+  width: 100%;
+  margin-top: 10px;
+  padding: 8px;
+  font-size: 14px;
+}
+
+
+
+

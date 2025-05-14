@@ -1,1 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Генератор карты магазинов</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
+  <button id="toggleMenuBtn" aria-label="Открыть меню">☰</button>
 
+  <div id="sidebar" class="sidebar hidden">
+    <h2>Меню</h2>
+
+    <button onclick="openAddShop()">Добавить магазин</button>
+    <button onclick="generateLink()">Сгенерировать ссылку</button>
+
+    <div id="shopControls" class="hidden">
+      <label>Магазин:</label>
+      <select id="shopList">
+        <option disabled selected>Выберите магазин</option>
+        <option value="42.8762,74.5901,Эльдик">Эльдик</option>
+        <option value="42.8799,74.5928,Султан">Султан</option>
+        <option value="42.8754,74.5872,Глобус">Глобус</option>
+        <option value="42.8801,74.5944,Мадина">Мадина</option>
+      </select>
+
+      <label>Сторона метки:</label>
+      <select id="side">
+        <option value="up">Вверх</option>
+        <option value="right">Справа</option>
+        <option value="down">Вниз</option>
+        <option value="left">Слева</option>
+      </select>
+
+      <button onclick="addMarker()">Добавить на карту</button>
+    </div>
+
+    <textarea id="output" readonly></textarea>
+
+    <button id="closeMenuBtn">Закрыть</button>
+  </div>
+
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="script.js"></script>
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const shopControls = document.getElementById('shopControls');
+    const output = document.getElementById('output');
+
+    document.getElementById('toggleMenuBtn').onclick = () => sidebar.classList.remove('hidden');
+    document.getElementById('closeMenuBtn').onclick = () => sidebar.classList.add('hidden');
+
+    function openAddShop() {
+      shopControls.classList.toggle('hidden');
+    }
+
+    function generateLink() {
+      const link = `index.html?m=${markerData.join(';')}`;
+      output.value = link;
+      navigator.clipboard.writeText(link).then(() => {
+        alert("Ссылка скопирована!");
+      });
+    }
+  </script>
+</body>
+</html>
