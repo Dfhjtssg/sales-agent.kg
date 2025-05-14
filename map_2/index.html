@@ -1,1 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Генератор ссылки с метками</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
 
+  <div id="form">
+    <h2>Добавить метку</h2>
+
+    <label>Широта:</label>
+    <input type="text" id="lat" placeholder="Напр. 42.8741" />
+
+    <label>Долгота:</label>
+    <input type="text" id="lon" placeholder="Напр. 74.6123" />
+
+    <label>Название магазина:</label>
+    <input type="text" id="text" placeholder="Название магазина" />
+
+    <label>Сторона метки:</label>
+    <select id="side">
+      <option value="up">Вверх</option>
+      <option value="right">Справа</option>
+      <option value="down">Вниз</option>
+      <option value="left">Слева</option>
+    </select>
+
+    <button onclick="addMarker()">Добавить на карту</button>
+    <button onclick="generateLink()">Сгенерировать ссылку</button>
+
+    <label>Удалить метку:</label>
+    <select id="markerList"></select>
+    <button onclick="removeSelectedMarker()">Удалить выбранную метку</button>
+
+    <h3>Ссылка:</h3>
+    <textarea id="output" readonly></textarea>
+  </div>
+
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
