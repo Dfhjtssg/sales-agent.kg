@@ -23,18 +23,19 @@
 
     <label>Сторона метки:</label>
     <select id="side">
-      <option value="up">Вверх</option>
+      <option value="up">Сверху</option>
       <option value="right">Справа</option>
-      <option value="down">Вниз</option>
+      <option value="down">Снизу</option>
       <option value="left">Слева</option>
     </select>
 
     <button onclick="addMarker()">Добавить на карту</button>
-    <button onclick="generateLink()">Сгенерировать ссылку</button>
+    
 
     <label>Удалить метку:</label>
     <select id="markerList"></select>
     <button onclick="removeSelectedMarker()">Удалить выбранную метку</button>
+    <button onclick="copyToClipboard(document.getElementById('output').value)">Скопировать ссылку</button>
 
     <h3>Ссылка:</h3>
     <textarea id="output" readonly></textarea>

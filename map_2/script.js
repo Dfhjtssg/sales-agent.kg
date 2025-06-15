@@ -1,12 +1,12 @@
 const map = L.map('map', {
   zoomControl: false
-}).setView([42.92, 74.60], 13);
+}).setView([42.847044, 74.585774], 13);
 
 L.control.zoom({
   position: 'topright'
 }).addTo(map);
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+L.tileLayer('https://tile2.maps.2gis.com/tiles?x={x}&y={y}&z={z}&v=1', {
   attribution: ''
 }).addTo(map);
 
@@ -57,7 +57,7 @@ function removeSelectedMarker() {
 }
 
 function generateLink() {
-  const link = `index.html?m=${markerData.join(';')}`;
+  const link = `https://dfhjtssg.github.io/arto-map/index.html?m=${markerData.join(';')}`;
   document.getElementById('output').value = link;
 }
 
@@ -80,22 +80,9 @@ function addShopMarker(lat, lon, text, initialDirection = 'up') {
     const triangle = document.createElement('div');
     triangle.className = 'triangle';
 
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'delete-button';
-    deleteBtn.textContent = 'Удалить';
-    deleteBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      map.removeLayer(marker);
-      const index = markerObjects.findIndex(obj => obj.marker === marker);
-      if (index !== -1) {
-        markerObjects.splice(index, 1);
-        markerData.splice(index, 1);
-        updateMarkerList();
-        generateLink();
-      }
-    });
+ 
 
-    wrapper.appendChild(deleteBtn);
+    
 
     if (direction === 'left') {
       wrapper.append(triangle, label);
@@ -140,3 +127,33 @@ function addShopMarker(lat, lon, text, initialDirection = 'up') {
 
   return marker;
 }
+
+function copyToClipboard(text) {
+  // Используем API буфера обмена, если доступен
+  if (navigator.clipboard && window.isSecureContext) {
+    return navigator.clipboard.writeText(text);
+  } else {
+    // Фолбэк для менее современных браузеров
+    let textArea = document.createElement("textarea");
+    textArea.value = text;
+    
+    // Скрыть элемент, чтобы он не был виден на странице
+    textArea.style.position = "fixed";
+    textArea.style.top = "-1000px";
+    textArea.style.left = "-1000px";
+
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+      document.execCommand("copy");
+    } catch (err) {
+      console.error("Не удалось скопировать текст: ", err);
+    }
+
+    document.body.removeChild(textArea);
+    return Promise.resolve(); // для единообразия с Clipboard API
+  }
+}
+
