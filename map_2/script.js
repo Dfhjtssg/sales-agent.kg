@@ -5,8 +5,8 @@ const map = L.map('map', {
 L.control.zoom({
   position: 'topright'
 }).addTo(map);
-// https://tile2.maps.2gis.com/tiles?x={x}&y={y}&z={z}&v=1
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+// https://tile2.maps.2gis.com/tiles?x={x}&y={y}&z={z}&v=1  https://tile.openstreetmap.org/{z}/{x}/{y}.png
+L.tileLayer('https://tile2.maps.2gis.com/tiles?x={x}&y={y}&z={z}&v=1', {
   attribution: ''
 }).addTo(map);
 
