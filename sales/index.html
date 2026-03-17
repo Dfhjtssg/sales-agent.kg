@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sales Grid Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0a;
+      --panel: #111111;
+      --border: #1e1e1e;
+      --accent: #00ff88;
+      --accent2: #ff3b3b;
+      --accent3: #ffcc00;
+      --text: #f0f0f0;
+      --muted: #555;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'IBM Plex Mono', monospace;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 32px 16px;
+    }
+
+    .container { width: 100%; max-width: 640px; }
+
+    .header { margin-bottom: 36px; }
+    .header h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 52px;
+      letter-spacing: 2px;
+      line-height: 1;
+    }
+    .header h1 span { color: var(--accent); }
+    .header p { font-size: 11px; color: var(--muted); margin-top: 8px; letter-spacing: 1px; text-transform: uppercase; }
+
+    /* INPUT SECTION */
+    .inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .field { display: flex; flex-direction: column; gap: 7px; }
+    .field label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+    .field input {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 18px;
+      font-weight: 600;
+      padding: 12px 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+    .field input:focus { border-color: var(--accent); }
+    .field input::placeholder { color: #2a2a2a; }
+
+    button {
+      width: 100%;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 2px;
+      padding: 15px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      margin-bottom: 28px;
+    }
+    button:hover { opacity: 0.85; }
+    button:active { transform: scale(0.99); }
+
+    /* RESULT CARD */
+    .result { display: none; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-main {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 28px;
+      margin-bottom: 16px;
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 18px;
+    }
+
+    .result-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
+    .result-big {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 72px;
+      line-height: 1;
+      letter-spacing: 1px;
+    }
+    .result-forecast {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 36px;
+      line-height: 1;
+      color: var(--muted);
+      text-align: right;
+    }
+    .result-forecast small { display: block; font-size: 10px; letter-spacing: 1px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; margin-bottom: 4px; }
+
+    /* BAR */
+    .bar-wrap { height: 8px; background: var(--border); margin-bottom: 24px; overflow: hidden; border-radius: 1px; }
+    .bar-fill { height: 100%; width: 0%; transition: width 0.9s cubic-bezier(0.4,0,0.2,1); border-radius: 1px; }
+
+    /* GRID HIGHLIGHT */
+    .grid-title {
+      font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 12px;
+      border-top: 1px solid var(--border); padding-top: 20px;
+    }
+
+    .grid-table { width: 100%; border-collapse: collapse; }
+    .grid-table tr { border-bottom: 1px solid var(--border); }
+    .grid-table td {
+      padding: 9px 12px;
+      font-size: 13px;
+    }
+    .grid-table td:last-child { text-align: right; font-weight: 600; }
+    .grid-table tr.active {
+      background: rgba(0,255,136,0.07);
+      border-left: 3px solid var(--accent);
+    }
+    .grid-table tr.active td { color: var(--accent); }
+    .grid-table tr.active td:last-child { color: var(--accent); }
+    .grid-table tr.next { opacity: 0.45; }
+    .grid-table tr.done { opacity: 0.25; }
+
+    .badge {
+      display: inline-block;
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    .verdict {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      padding: 16px 18px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.8;
+      margin-bottom: 16px;
+    }
+    .verdict span { color: var(--text); font-weight: 600; }
+
+    .next-target {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent3);
+      padding: 16px 18px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.8;
+      margin-bottom: 28px;
+    }
+    .next-target span { color: var(--accent3); font-weight: 600; }
+
+    .error {
+      font-size: 11px; color: var(--accent2);
+      margin-top: -16px; margin-bottom: 16px; display: none;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>ПЛАН<br><span>ПРОДАЖ</span></h1>
+    <p>Калькулятор по сетке выполнения</p>
+  </div>
+
+  <div class="inputs">
+    <div class="field">
+      <label>Факт сегодня (F)</label>
+      <input type="number" id="fact" placeholder="490000">
+    </div>
+    <div class="field">
+      <label>Прошло дней</label>
+      <input type="number" id="dpast" placeholder="12">
+    </div>
+    <div class="field">
+      <label>Осталось дней</label>
+      <input type="number" id="dleft" placeholder="8">
+    </div>
+    <div class="field" style="opacity:0.4; pointer-events:none;">
+      <label>Базовый план</label>
+      <input type="number" value="454000" disabled>
+    </div>
+  </div>
+
+  <div class="error" id="error">⚠ Заполните все поля корректными значениями</div>
+
+  <button onclick="calculate()">РАССЧИТАТЬ</button>
+
+  <div class="result" id="result">
+
+    <div class="verdict" id="verdict"></div>
+    <div class="next-target" id="nextTarget"></div>
+
+    <div class="result-main">
+      <div class="result-row">
+        <div>
+          <div class="result-label">Текущий уровень</div>
+          <div class="result-big" id="resultPct">—</div>
+        </div>
+        <div style="text-align:right">
+          <div class="result-forecast">
+            <small>Прогноз к концу</small>
+            <span id="forecastVal">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bar-wrap">
+        <div class="bar-fill" id="barFill"></div>
+      </div>
+
+      <div class="grid-title">Сетка выполнения</div>
+      <table class="grid-table" id="gridTable"></table>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  const GRID = [
+    { sum: 363000, pct: 80 },
+    { sum: 409000, pct: 90 },
+    { sum: 454000, pct: 100 },
+    { sum: 499400, pct: 110 },
+    { sum: 544800, pct: 120 },
+    { sum: 590200, pct: 130 },
+    { sum: 635600, pct: 140 },
+    { sum: 681000, pct: 150 },
+    { sum: 726400, pct: 160 },
+    { sum: 771800, pct: 170 },
+    { sum: 817200, pct: 180 },
+    { sum: 862600, pct: 190 },
+    { sum: 908000, pct: 200 },
+    { sum: 998800, pct: 220 },
+  ];
+
+  function fmt(n) {
+    return Math.round(n).toLocaleString('ru-RU') + ' ₽';
+  }
+
+  function getLevel(sum) {
+    let level = null;
+    for (let i = 0; i < GRID.length; i++) {
+      if (sum >= GRID[i].sum) level = GRID[i];
+      else break;
+    }
+    return level;
+  }
+
+  function getNextLevel(sum) {
+    for (let i = 0; i < GRID.length; i++) {
+      if (GRID[i].sum > sum) return GRID[i];
+    }
+    return null;
+  }
+
+  function barColor(pct) {
+    if (pct >= 150) return '#00ff88';
+    if (pct >= 100) return '#00cc66';
+    if (pct >= 80)  return '#ffcc00';
+    return '#ff3b3b';
+  }
+
+  function calculate() {
+    const F      = parseFloat(document.getElementById('fact').value);
+    const Dpast  = parseFloat(document.getElementById('dpast').value);
+    const Dleft  = parseFloat(document.getElementById('dleft').value);
+    const errEl  = document.getElementById('error');
+
+    if (!F || !Dpast || !Dleft || Dpast <= 0 || Dleft < 0) {
+      errEl.style.display = 'block';
+      document.getElementById('result').style.display = 'none';
+      return;
+    }
+    errEl.style.display = 'none';
+
+    const tempo    = F / Dpast;
+    const forecast = F + tempo * Dleft;
+
+    const currentLevel  = getLevel(forecast);
+    const nextLevel     = getNextLevel(forecast);
+    const currentLevelF = getLevel(F);
+
+    // Result display
+    const resEl = document.getElementById('result');
+    resEl.style.display = 'block';
+
+    document.getElementById('resultPct').textContent = currentLevel ? currentLevel.pct + '%' : '< 80%';
+    document.getElementById('resultPct').style.color = currentLevel ? barColor(currentLevel.pct) : '#ff3b3b';
+    document.getElementById('forecastVal').textContent = fmt(forecast);
+
+    // Bar
+    const barPct = currentLevel ? Math.min((forecast / GRID[GRID.length-1].sum) * 100, 100) : 5;
+    const bar = document.getElementById('barFill');
+    bar.style.background = barColor(currentLevel ? currentLevel.pct : 0);
+    setTimeout(() => { bar.style.width = barPct + '%'; }, 50);
+
+    // Verdict
+    const vEl = document.getElementById('verdict');
+    if (!currentLevel) {
+      vEl.innerHTML = `🔴 Прогноз <span>${fmt(forecast)}</span> — план не достигает даже уровня <span>80%</span>. До минимального уровня не хватает <span>${fmt(GRID[0].sum - forecast)}</span>.`;
+    } else {
+      vEl.innerHTML = `✅ По текущему темпу (<span>${fmt(tempo)}/день</span>) прогноз к концу месяца — <span>${fmt(forecast)}</span>. Это уровень <span>${currentLevel.pct}%</span> от плана.`;
+    }
+
+    // Next target
+    const ntEl = document.getElementById('nextTarget');
+    if (nextLevel) {
+      const gap       = nextLevel.sum - forecast;
+      const perDay    = Dleft > 0 ? gap / Dleft : gap;
+      ntEl.innerHTML  = `🎯 До следующего уровня <span>${nextLevel.pct}%</span> не хватает <span>${fmt(gap)}</span> — нужно добавить <span>${fmt(perDay)}/день</span>.`;
+      ntEl.style.display = 'block';
+    } else {
+      ntEl.innerHTML = `🏆 Вы достигли <span>максимального уровня сетки (220%)</span>!`;
+    }
+
+    // Grid table
+    const tbody = document.getElementById('gridTable');
+    tbody.innerHTML = '';
+    GRID.forEach(row => {
+      const tr = document.createElement('tr');
+      const isCurrent = currentLevel && row.pct === currentLevel.pct;
+      const isDone     = forecast > row.sum && !isCurrent;
+      const isNext     = !isCurrent && !isDone;
+
+      if (isCurrent) tr.className = 'active';
+      else if (isDone) tr.className = 'done';
+      else tr.className = 'next';
+
+      tr.innerHTML = `
+        <td>${fmt(row.sum)} ${isCurrent ? '<span class="badge">вы здесь</span>' : ''}</td>
+        <td>${row.pct}%</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  document.querySelectorAll('input').forEach(el => {
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') calculate(); });
+  });
+</script>
+</body>
+</html>
