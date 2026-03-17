@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sales Grid Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0a; --panel: #111111; --border: #1e1e1e;
+      --accent: #00ff88; --accent2: #ff3b3b; --accent3: #ffcc00;
+      --text: #f0f0f0; --muted: #555;
+    }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'IBM Plex Mono', monospace;
+      min-height: 100vh; display: flex;
+      align-items: flex-start; justify-content: center; padding: 32px 16px;
+    }
+    .container { width: 100%; max-width: 600px; }
+
+    .header { margin-bottom: 36px; }
+    .header h1 { font-family: 'Bebas Neue', sans-serif; font-size: 52px; letter-spacing: 2px; line-height: 1; }
+    .header h1 span { color: var(--accent); }
+    .header p { font-size: 11px; color: var(--muted); margin-top: 8px; letter-spacing: 1px; text-transform: uppercase; }
+
+    /* INPUTS */
+    .inputs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 28px; }
+    .field { display: flex; flex-direction: column; gap: 7px; }
+    .field label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+    .field input {
+      background: var(--panel); border: 1px solid var(--border);
+      color: #ffffff; font-family: 'IBM Plex Mono', monospace;
+      font-size: 18px; font-weight: 600; padding: 12px 14px;
+      outline: none; transition: border-color 0.2s; width: 100%;
+    }
+    .field input:focus { border-color: var(--accent); }
+    .field input::placeholder { color: #3a3a3a; }
+
+    /* TARGET */
+    .target-section { margin-bottom: 28px; }
+    .target-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+    .target-label em { color: var(--accent3); font-style: normal; }
+    .target-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+    .target-btn {
+      background: var(--panel); border: 1px solid var(--border);
+      color: var(--muted); font-family: 'IBM Plex Mono', monospace;
+      padding: 10px 4px; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      transition: all 0.15s; width: 100%;
+    }
+    .target-btn:hover { border-color: #444; color: var(--text); }
+    .target-btn.selected { background: rgba(255,204,0,0.1); border-color: var(--accent3); color: var(--accent3); }
+    .target-pct { font-weight: 600; font-size: 13px; }
+    .target-sum { font-size: 8px; opacity: 0.6; }
+
+    button.calc-btn {
+      width: 100%; background: var(--accent); color: #000; border: none;
+      font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+      letter-spacing: 2px; padding: 15px; cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s; margin-bottom: 28px;
+    }
+    button.calc-btn:hover { opacity: 0.85; }
+    button.calc-btn:active { transform: scale(0.99); }
+
+    .error { font-size: 11px; color: var(--accent2); margin-top: -16px; margin-bottom: 16px; display: none; }
+
+    .result { display: none; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+    /* MAIN CARD */
+    .prob-card { background: var(--panel); border: 1px solid var(--border); padding: 28px; margin-bottom: 16px; }
+
+    .prob-top { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 4px; }
+    .prob-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+    .prob-value { font-family: 'Bebas Neue', sans-serif; font-size: 88px; line-height: 1; }
+    .prob-right { text-align: right; }
+    .prob-right small { display: block; font-size: 10px; font-family: 'IBM Plex Mono', monospace; color: var(--muted); letter-spacing: 1px; margin-bottom: 4px; }
+    .prob-right .tval { font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--accent3); }
+    .prob-right .tsum { font-family: 'Bebas Neue', sans-serif; font-size: 16px; color: var(--muted); }
+
+    .bar-wrap { height: 8px; background: var(--border); margin: 20px 0; overflow: hidden; }
+    .bar-fill { height: 100%; width: 0%; transition: width 1s cubic-bezier(0.4,0,0.2,1); }
+
+    /* STATS */
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); margin-bottom: 24px; }
+    .stat { background: var(--panel); padding: 14px 12px; }
+    .stat-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    .stat-value { font-size: 14px; font-weight: 600; color: var(--text); }
+    .stat-value.highlight { color: var(--accent3); }
+
+    /* GRID TABLE */
+    .grid-title { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; border-top: 1px solid var(--border); padding-top: 20px; }
+    .grid-table { width: 100%; border-collapse: collapse; }
+    .grid-table tr { border-bottom: 1px solid var(--border); }
+    .grid-table td { padding: 10px 12px; font-size: 13px; }
+    .grid-table td:nth-child(2) { text-align: center; color: var(--muted); }
+    .grid-table td:last-child { text-align: right; font-weight: 600; }
+    .grid-table tr.row-done td { color: #2a2a2a; }
+    .grid-table tr.row-done td:last-child { color: #00884a; }
+    .grid-table tr.row-target { background: rgba(255,204,0,0.06); }
+    .grid-table tr.row-target td { color: var(--accent3); }
+    .grid-table tr.row-next td { color: #3a3a3a; }
+    .badge { display: inline-block; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; padding: 2px 6px; border: 1px solid currentColor; margin-left: 8px; vertical-align: middle; opacity: 0.9; }
+
+    .verdict { background: var(--panel); border: 1px solid var(--border); border-left: 3px solid var(--accent); padding: 16px 18px; font-size: 12px; color: var(--muted); line-height: 1.9; margin-bottom: 16px; }
+    .verdict.warn { border-left-color: var(--accent2); }
+    .verdict span { color: var(--text); font-weight: 600; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>ПЛАН<br><span>ПРОДАЖ</span></h1>
+    <p>Калькулятор по сетке выполнения</p>
+  </div>
+
+  <div class="inputs">
+    <div class="field">
+      <label>Факт сегодня</label>
+      <input type="number" id="fact" placeholder="490000">
+    </div>
+    <div class="field">
+      <label>Прошло дней</label>
+      <input type="number" id="dpast" placeholder="12">
+    </div>
+    <div class="field">
+      <label>Осталось дней</label>
+      <input type="number" id="dleft" placeholder="8">
+    </div>
+  </div>
+
+  <div class="target-section">
+    <div class="target-label">Выберите <em>целевой порог</em></div>
+    <div class="target-grid" id="targetGrid"></div>
+  </div>
+
+  <div class="error" id="error">⚠ Заполните все поля корректно</div>
+  <button class="calc-btn" onclick="calculate()">РАССЧИТАТЬ</button>
+
+  <div class="result" id="result">
+    <div class="verdict" id="verdict"></div>
+    <div class="prob-card">
+      <div class="prob-top">
+        <div>
+          <div class="prob-label">Вероятность достижения цели</div>
+          <div class="prob-value" id="probValue">—</div>
+        </div>
+        <div class="prob-right">
+          <small>Целевой порог</small>
+          <div class="tval" id="targetPct">—</div>
+          <div class="tsum" id="targetSum">—</div>
+        </div>
+      </div>
+
+      <div class="bar-wrap"><div class="bar-fill" id="barFill"></div></div>
+
+      <div class="stats-row">
+        <div class="stat">
+          <div class="stat-label">Темп сейчас</div>
+          <div class="stat-value" id="statTempo">—</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Нужно в день</div>
+          <div class="stat-value highlight" id="statNeeded">—</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Прогноз</div>
+          <div class="stat-value" id="statForecast">—</div>
+        </div>
+      </div>
+
+      <div class="grid-title">Сетка выполнения</div>
+      <table class="grid-table" id="gridTable"></table>
+    </div>
+  </div>
+
+</div>
+<script>
+  var GRID = [
+    { sum: 363000, pct: 80 },
+    { sum: 409000, pct: 90 },
+    { sum: 454000, pct: 100 },
+    { sum: 499400, pct: 110 },
+    { sum: 544800, pct: 120 },
+    { sum: 590200, pct: 130 },
+    { sum: 635600, pct: 140 },
+    { sum: 681000, pct: 150 },
+    { sum: 726400, pct: 160 },
+    { sum: 771800, pct: 170 },
+    { sum: 817200, pct: 180 },
+    { sum: 862600, pct: 190 },
+    { sum: 908000, pct: 200 },
+    { sum: 998800, pct: 220 }
+  ];
+
+  var selectedTarget = 100;
+
+  function fmt(n) { return Math.round(n).toLocaleString('ru-RU') + ' ₽'; }
+  function fmtShort(n) {
+    if (n >= 1000000) return (n/1000000).toFixed(1)+'М';
+    if (n >= 1000) return Math.round(n/1000)+'к';
+    return Math.round(n)+'';
+  }
+  function barColor(p) {
+    if (p >= 90) return '#00ff88';
+    if (p >= 60) return '#ffcc00';
+    return '#ff3b3b';
+  }
+
+  function renderTargetButtons() {
+    var c = document.getElementById('targetGrid');
+    c.innerHTML = '';
+    GRID.forEach(function(row) {
+      var btn = document.createElement('button');
+      btn.className = 'target-btn' + (row.pct === selectedTarget ? ' selected' : '');
+      btn.innerHTML = '<span class="target-pct">'+row.pct+'%</span><span class="target-sum">'+fmtShort(row.sum)+'</span>';
+      btn.onclick = (function(pct){ return function(){ selectedTarget = pct; renderTargetButtons(); }; })(row.pct);
+      c.appendChild(btn);
+    });
+  }
+
+  function calculate() {
+    var F     = parseFloat(document.getElementById('fact').value);
+    var Dpast = parseFloat(document.getElementById('dpast').value);
+    var Dleft = parseFloat(document.getElementById('dleft').value);
+    var errEl = document.getElementById('error');
+
+    if (!F || !Dpast || !Dleft || Dpast <= 0 || Dleft < 0) {
+      errEl.style.display = 'block';
+      document.getElementById('result').style.display = 'none';
+      return;
+    }
+    errEl.style.display = 'none';
+
+    var targetRow = GRID.find(function(r){ return r.pct === selectedTarget; });
+    var targetSum = targetRow.sum;
+
+    var tempo    = F / Dpast;
+    var forecast = F + tempo * Dleft;
+    var prob     = Math.min(forecast / targetSum, 1) * 100;
+    var gap      = Math.max(targetSum - F, 0);
+    var needed   = Dleft > 0 ? gap / Dleft : 0;
+
+    document.getElementById('result').style.display = 'block';
+
+    var color = barColor(prob);
+    var pEl = document.getElementById('probValue');
+    pEl.textContent = Math.round(prob) + '%';
+    pEl.style.color = color;
+
+    document.getElementById('targetPct').textContent = selectedTarget + '%';
+    document.getElementById('targetSum').textContent = fmt(targetSum);
+
+    var bar = document.getElementById('barFill');
+    bar.style.background = color;
+    setTimeout(function(){ bar.style.width = prob + '%'; }, 50);
+
+    document.getElementById('statTempo').textContent    = fmtShort(tempo) + '/день';
+    document.getElementById('statNeeded').textContent   = needed > 0 ? fmtShort(needed) + '/день' : '✓ Достигнуто';
+    document.getElementById('statForecast').textContent = fmt(forecast);
+
+    var vEl = document.getElementById('verdict');
+    if (prob >= 100) {
+      vEl.className = 'verdict';
+      vEl.innerHTML = '✅ Цель <span>'+selectedTarget+'%</span> будет достигнута. Прогноз <span>'+fmt(forecast)+'</span> — запас <span>'+fmt(forecast - targetSum)+'</span>.';
+    } else if (prob >= 70) {
+      vEl.className = 'verdict';
+      vEl.innerHTML = '⚡ Высокий шанс. Текущий темп <span>'+fmt(tempo)+'/день</span>, нужно <span>'+fmt(needed)+'/день</span> из оставшихся дней.';
+    } else if (prob >= 40) {
+      vEl.className = 'verdict warn';
+      vEl.innerHTML = '⚠️ Средний шанс. Нужно ускориться — требуется <span>'+fmt(needed)+'/день</span> вместо текущих <span>'+fmt(tempo)+'/день</span>.';
+    } else {
+      vEl.className = 'verdict warn';
+      vEl.innerHTML = '🔴 Низкий шанс. Прогноз <span>'+fmt(forecast)+'</span> при цели <span>'+fmt(targetSum)+'</span>. Разрыв: <span>'+fmt(targetSum - forecast)+'</span>.';
+    }
+
+    var tbody = document.getElementById('gridTable');
+    tbody.innerHTML = '';
+    GRID.forEach(function(row) {
+      var tr = document.createElement('tr');
+      var isTarget = row.pct === selectedTarget;
+      var isDone   = !isTarget && F >= row.sum;
+      tr.className = isTarget ? 'row-target' : (isDone ? 'row-done' : 'row-next');
+
+      var td1 = document.createElement('td');
+      td1.textContent = fmt(row.sum);
+      if (isTarget) {
+        var b = document.createElement('span'); b.className='badge'; b.textContent='цель'; td1.appendChild(b);
+      } else if (isDone) {
+        var b2 = document.createElement('span'); b2.className='badge'; b2.textContent='✓'; td1.appendChild(b2);
+      }
+      var td2 = document.createElement('td');
+      td2.textContent = row.pct + '%';
+      var td3 = document.createElement('td');
+      if (F >= row.sum) {
+        td3.textContent = '✓';
+        td3.style.color = '#00884a';
+      } else {
+        var rowNeeded = Dleft > 0 ? (row.sum - F) / Dleft : 0;
+        td3.textContent = fmt(rowNeeded) + '/день';
+        if (isTarget) td3.style.color = 'var(--accent3)';
+      }
+
+      tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3);
+      tbody.appendChild(tr);
+    });
+  }
+
+  document.querySelectorAll('input').forEach(function(el){
+    el.addEventListener('keydown', function(e){ if(e.key==='Enter') calculate(); });
+  });
+
+  renderTargetButtons();
+</script>
+</body>
+</html>
